@@ -396,8 +396,9 @@ class IndexXMLSitemapParser(AbstractXMLSitemapParser):
         '_web_client',
         '_recursion_level',
 
-        # List of sub-sitemap URLs found in this index sitemap
-        '_sub_sitemap_urls',
+        '_curr_url',
+        '_curr_last_modified',
+        '_pages'
     ]
 
     def __init__(self, url: str, web_client: AbstractWebClient, recursion_level: int):
@@ -405,46 +406,53 @@ class IndexXMLSitemapParser(AbstractXMLSitemapParser):
 
         self._web_client = web_client
         self._recursion_level = recursion_level
-        self._sub_sitemap_urls = []
+
+        self._curr_url = None
+        self._curr_last_modified = None
+        self._pages: list[SitemapPage] = []
+
+        # curr_urls = set(map(lambda p: p.url, self._pages))
 
     def xml_element_end(self, name: str) -> None:
+        if name == 'sitemap:sitemap':
+            curr_urls = set(map(lambda p: p.url, self._pages))
 
-        if name == 'sitemap:loc':
-            sub_sitemap_url = html_unescape_strip(self._last_char_data)
-            if not is_http_url(sub_sitemap_url):
-                log.warning("Sub-sitemap URL does not look like one: {}".format(sub_sitemap_url))
+            page = SitemapPage(
+                url=self._curr_url,
+                is_sitemap=True,
+                last_modified=self._curr_last_modified
+            )
 
-            else:
-                if sub_sitemap_url not in self._sub_sitemap_urls:
-                    self._sub_sitemap_urls.append(sub_sitemap_url)
+            if page.url not in curr_urls:
+                self._pages.append(page)
+            
+            self._curr_url = None
+            self._curr_last_modified = None
+
+        else:
+            if name == 'sitemap:loc':
+                sub_sitemap_url = html_unescape_strip(self._last_char_data)
+                if not is_http_url(sub_sitemap_url):
+                    log.warning("Sub-sitemap URL does not look like one: {}".format(sub_sitemap_url))
+                else:
+                    self._curr_url = sub_sitemap_url
+
+
+            elif name == 'sitemap:lastmod':
+                # Element might be present but character data might be empty
+                last_modified = html_unescape_strip(self._last_char_data)
+                if last_modified:
+                    last_modified = parse_iso8601_date(last_modified)
+                else:
+                    last_modified = None
+                self._curr_last_modified = last_modified
+
 
         super().xml_element_end(name=name)
 
     def sitemap(self) -> AbstractSitemap:
-
-        sub_sitemaps = []
-
-        for sub_sitemap_url in self._sub_sitemap_urls:
-
-            # URL might be invalid, or recursion limit might have been reached
-            try:
-                # TODO: convert sitemap_url to SitemapPage()
-                fetcher = SitemapFetcher(url=sub_sitemap_url,
-                                         recursion_level=self._recursion_level + 1,
-                                         web_client=self._web_client)
-                fetched_sitemap = fetcher.sitemap()
-            except Exception as ex:
-                fetched_sitemap = InvalidSitemap(
-                    url=sub_sitemap_url,
-                    reason="Unable to add sub-sitemap from URL {}: {}".format(sub_sitemap_url, str(ex)),
-                )
-
-            sub_sitemaps.append(fetched_sitemap)
-
-        index_sitemap = IndexXMLSitemap(url=self._url, sub_sitemaps=sub_sitemaps)
-
-        return index_sitemap
-
+        sitemap = PagesXMLSitemap(url=self._url, pages=self._pages)
+        return sitemap
 
 class PagesXMLSitemapParser(AbstractXMLSitemapParser):
     """

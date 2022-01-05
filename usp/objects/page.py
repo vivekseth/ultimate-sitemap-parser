@@ -216,7 +216,7 @@ class SitemapPage(object):
     """Single sitemap-derived page."""
 
     __slots__ = [
-        '__is_sitemap'
+        '__is_sitemap',
         '__url',
         '__priority',
         '__last_modified',
