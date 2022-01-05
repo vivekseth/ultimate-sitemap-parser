@@ -58,6 +58,7 @@ class SitemapFetcher(object):
         '_url',
         '_recursion_level',
         '_web_client',
+        '_response'
     ]
 
     def __init__(self, url: str, recursion_level: int, web_client: Optional[AbstractWebClient] = None):
@@ -76,10 +77,15 @@ class SitemapFetcher(object):
         self._url = url
         self._web_client = web_client
         self._recursion_level = recursion_level
+        self._response = None
 
     def sitemap(self) -> AbstractSitemap:
+        if self._response:
+            raise Exception('CANNOT RE_USE FETCHER')
+
         log.info("Fetching level {} sitemap from {}...".format(self._recursion_level, self._url))
         response = get_url_retry_on_client_errors(url=self._url, web_client=self._web_client)
+        self._response = response
 
         if isinstance(response, WebClientErrorResponse):
             return InvalidSitemap(
