@@ -11,23 +11,25 @@ from .web_client.abstract_client import AbstractWebClient
 
 log = create_logger(__name__)
 
-_UNPUBLISHED_SITEMAP_PATHS = {
-    'sitemap.xml',
-    'sitemap.xml.gz',
-    'sitemap_index.xml',
-    'sitemap-index.xml',
-    'sitemap_index.xml.gz',
-    'sitemap-index.xml.gz',
-    '.sitemap.xml',
-    'sitemap',
-    'admin/config/search/xmlsitemap',
-    'sitemap/sitemap-index.xml',
-    'sitemap_news.xml',
-    'sitemap-news.xml',
-    'sitemap_news.xml.gz',
-    'sitemap-news.xml.gz',
-}
-"""Paths which are not exposed in robots.txt but might still contain a sitemap."""
+def get_unpublished_sitemap_paths() -> list[str]:
+    """Paths which are not exposed in robots.txt but might still contain a sitemap."""
+    return [
+        'sitemap.xml',
+        'sitemap.xml.gz',
+        'sitemap_index.xml',
+        'sitemap-index.xml',
+        'sitemap_index.xml.gz',
+        'sitemap-index.xml.gz',
+        '.sitemap.xml',
+        'sitemap',
+        'admin/config/search/xmlsitemap',
+        'sitemap/sitemap-index.xml',
+        'sitemap_news.xml',
+        'sitemap-news.xml',
+        'sitemap_news.xml.gz',
+        'sitemap-news.xml.gz',
+    ]
+
 
 
 def sitemap_tree_for_homepage(homepage_url: str, web_client: Optional[AbstractWebClient] = None) -> AbstractSitemap:
@@ -62,7 +64,7 @@ def sitemap_tree_for_homepage(homepage_url: str, web_client: Optional[AbstractWe
         for sub_sitemap in robots_txt_sitemap.sub_sitemaps:
             sitemap_urls_found_in_robots_txt.add(sub_sitemap.url)
 
-    for unpublished_sitemap_path in _UNPUBLISHED_SITEMAP_PATHS:
+    for unpublished_sitemap_path in get_unpublished_sitemap_paths():
         unpublished_sitemap_url = homepage_url + unpublished_sitemap_path
 
         # Don't refetch URLs already found in robots.txt

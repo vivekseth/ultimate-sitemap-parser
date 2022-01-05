@@ -171,20 +171,14 @@ class IndexRobotsTxtSitemapParser(AbstractSitemapParser):
                 else:
                     log.warning("Sitemap URL {} doesn't look like an URL, skipping".format(sitemap_url))
 
-        sub_sitemaps = []
-
+        pages = []
         for sitemap_url in sitemap_urls.keys():
-            fetcher = SitemapFetcher(
-                url=sitemap_url,
-                recursion_level=self._recursion_level,
-                web_client=self._web_client,
-            )
-            fetched_sitemap = fetcher.sitemap()
-            sub_sitemaps.append(fetched_sitemap)
+            page = SitemapPage(url=sitemap_url, is_sitemap=True)
+            pages.append(page)
 
-        index_sitemap = IndexRobotsTxtSitemap(url=self._url, sub_sitemaps=sub_sitemaps)
-
-        return index_sitemap
+        sitemap = PagesXMLSitemap(url=self._url, pages=pages)
+        
+        return sitemap
 
 
 class PlainTextSitemapParser(AbstractSitemapParser):
@@ -428,6 +422,7 @@ class IndexXMLSitemapParser(AbstractXMLSitemapParser):
 
             # URL might be invalid, or recursion limit might have been reached
             try:
+                # TODO: convert sitemap_url to SitemapPage()
                 fetcher = SitemapFetcher(url=sub_sitemap_url,
                                          recursion_level=self._recursion_level + 1,
                                          web_client=self._web_client)

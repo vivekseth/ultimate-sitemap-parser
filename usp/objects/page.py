@@ -216,6 +216,7 @@ class SitemapPage(object):
     """Single sitemap-derived page."""
 
     __slots__ = [
+        '__is_sitemap'
         '__url',
         '__priority',
         '__last_modified',
@@ -225,6 +226,7 @@ class SitemapPage(object):
 
     def __init__(self,
                  url: str,
+                 is_sitemap: bool = False,
                  priority: Decimal = SITEMAP_PAGE_DEFAULT_PRIORITY,
                  last_modified: Optional[datetime.datetime] = None,
                  change_frequency: Optional[SitemapPageChangeFrequency] = None,
@@ -233,11 +235,13 @@ class SitemapPage(object):
         Initialize a new sitemap-derived page.
 
         :param url: Page URL.
+        :param is_sitemap: Is the page another sitemap?
         :param priority: Priority of this URL relative to other URLs on your site.
         :param last_modified: Date of last modification of the URL.
         :param change_frequency: Change frequency of a sitemap URL.
         :param news_story: Google News story attached to the URL.
         """
+        self.__is_sitemap = is_sitemap
         self.__url = url
         self.__priority = priority
         self.__last_modified = last_modified
@@ -249,6 +253,9 @@ class SitemapPage(object):
             raise NotImplemented
 
         if self.url != other.url:
+            return False
+        
+        if self.is_sitemap != other.is_sitemap:
             return False
 
         if self.priority != other.priority:
@@ -275,6 +282,7 @@ class SitemapPage(object):
         return (
             "{self.__class__.__name__}("
             "url={self.url}, "
+            "is_sitemap={self.is_sitemap}, "
             "priority={self.priority}, "
             "last_modified={self.last_modified}, "
             "change_frequency={self.change_frequency}, "
@@ -290,6 +298,15 @@ class SitemapPage(object):
         :return: Page URL.
         """
         return self.__url
+    
+    @property
+    def is_sitemap(self) -> str:
+        """
+        Return is sitemap.
+
+        :return: is sitemap.
+        """
+        return self.__is_sitemap
 
     @property
     def priority(self) -> Decimal:
