@@ -57,10 +57,11 @@ class RequestsWebClientErrorResponse(WebClientErrorResponse):
     pass
 
 
+
+DEFAULT_USER_AGENT = 'ultimate_sitemap_parser/{}'.format(__version__)
+
 class RequestsWebClient(AbstractWebClient):
     """requests-based web client to be used by the sitemap fetcher."""
-
-    __USER_AGENT = 'ultimate_sitemap_parser/{}'.format(__version__)
 
     __HTTP_REQUEST_TIMEOUT = 60
     """
@@ -73,9 +74,11 @@ class RequestsWebClient(AbstractWebClient):
         '__max_response_data_length',
         '__timeout',
         '__proxies',
+        '__user_agent',
     ]
 
-    def __init__(self):
+    def __init__(self, user_agent=DEFAULT_USER_AGENT):
+        self.__user_agent = user_agent
         self.__max_response_data_length = None
         self.__timeout = self.__HTTP_REQUEST_TIMEOUT
         self.__proxies = {}
@@ -108,7 +111,9 @@ class RequestsWebClient(AbstractWebClient):
                 url,
                 timeout=self.__timeout,
                 stream=True,
-                headers={'User-Agent': self.__USER_AGENT},
+                headers={
+                    'User-Agent': self.__user_agent
+                },
                 proxies=self.__proxies
             )
         except requests.exceptions.Timeout as ex:
