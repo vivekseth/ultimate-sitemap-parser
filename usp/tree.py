@@ -1,6 +1,6 @@
 """Helpers to generate a sitemap tree."""
 
-from typing import Optional
+from typing import Optional, List
 
 from .exceptions import SitemapException
 from .fetch_parse import SitemapFetcher
@@ -11,7 +11,7 @@ from .web_client.abstract_client import AbstractWebClient
 
 log = create_logger(__name__)
 
-def get_unpublished_sitemap_paths() -> list[str]:
+def get_unpublished_sitemap_paths() -> List[str]:
     """Paths which are not exposed in robots.txt but might still contain a sitemap."""
     return [
         'sitemap.xml',

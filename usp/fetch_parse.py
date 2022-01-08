@@ -5,7 +5,7 @@ import re
 import xml.parsers.expat
 from collections import OrderedDict
 from decimal import Decimal
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 
 from .exceptions import SitemapException, SitemapXMLParsingException
 from .helpers import (
@@ -409,7 +409,7 @@ class IndexXMLSitemapParser(AbstractXMLSitemapParser):
 
         self._curr_url = None
         self._curr_last_modified = None
-        self._pages: list[SitemapPage] = []
+        self._pages: List[SitemapPage] = []
 
         # curr_urls = set(map(lambda p: p.url, self._pages))
 
